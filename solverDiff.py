@@ -58,16 +58,11 @@ parser.add_argument('--linPrecond', type=str, default='JACOBI', choices=['JACOBI
 
 args = parser.parse_args()
 time = 0.0
-# print(gparser.gmethod)
-#-----CREATE MESH and CONNECTIVITY
-# Create mesh class and read mesh file
 
 # Read mesh file and setup geometry and connections
 msh = base(args.meshFile)
 
-print("%d, %d %d" %(msh.Nelements, msh.NFaces, msh.NTotalFaces))
-
-
+#Create intitial condition, boundary condition and source term
 Te = msh.createEfield(args.Nfields)
 Ts = msh.createEfield(args.Nfields)
 Tc = msh.createEfield(args.Nfields)
@@ -76,8 +71,6 @@ for elm,info in msh.Element.items():
 	Te[elm][:] = args.IC(0.0, x)
 	Tc[elm][:] = args.DC(0.0, x)
 	Ts[elm][:] = args.DS(0.0, x)
-
-
 
 # #--COMPUTE DIFFUSION
 dff  = diff(msh); dff.set(args)

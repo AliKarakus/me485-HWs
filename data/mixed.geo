@@ -57,4 +57,7 @@ Physical Line("Wall", 1) = {1, 2, 3, 4};
 Physical Line("Inflow", 2) = {9, 10, 11, 12};
 Physical Surface("Domain", 9) = {1, 2, 3 , 4, 5 };
 
-Coherence; 
+Mesh 2;
+Save "test.msh2";
+
+

@@ -36,7 +36,6 @@ class diff():
         gargs = parser.parse_args()
 
         self.grd.set(gargs)
-        # self.K = Ks
         self.bcFunc = args.BC
 #-------------------------------------------------------------------------------------------------#
     def assemble(self, Qe, Qb, Qc, K):
