@@ -1,1 +1,2 @@
-#Supplemant Codes for ME485 Codes for Fall2023
+Home Work 1
+In this homework you are going to implement various garadient computation techniques in mefvm.  

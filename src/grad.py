@@ -60,15 +60,15 @@ class grad():
         
         if(self.method == 'GREEN-GAUSS-CELL'):
             gradQ = self.greenGaussCell(Qe, Qb)
-            if(self.correct != 'FALSE'):
-                for i in range(2):
-                    gradQ = self.correctGrad(Qe, Qb, gradQ)
-        elif(self.method == 'GREEN-GAUSS-NODE'):
-            gradQ = self.greenGaussNode(Qe, Qb)
-        elif(self.method == 'LEAST-SQUARES'):
-            gradQ = self.leastSquares(Qe, Qb)
-        elif(self.method == 'WEIGHTED-LEAST-SQUARES'):
-            gradQ = self.weightedLeastSquares(Qe, Qb)
+            #if(self.correct != 'FALSE'):
+                #for i in range(2):
+                # gradQ = self.correctGrad(Qe, Qb, gradQ)
+        #elif(self.method == 'GREEN-GAUSS-NODE'):
+            #gradQ = self.greenGaussNode(Qe, Qb)
+        #elif(self.method == 'LEAST-SQUARES'):
+            #gradQ = self.leastSquares(Qe, Qb)
+        #elif(self.method == 'WEIGHTED-LEAST-SQUARES'):
+            #gradQ = self.weightedLeastSquares(Qe, Qb)
         else:
             print('the gradient method -- %s --  is not implemented' %self.method)
 
@@ -159,53 +159,11 @@ class grad():
         return gradQ
 #-------------------------------------------------------------------------------------------------#
     def correctGrad(self, Qe, Qb, gQ):
-
         msh = self.mesh
-        Nfields = Qe.shape[1]
+        Nfields    = Qe.shape[1]
         gradQ      = np.zeros((msh.Nelements, Nfields, msh.dim), float)
+       # Fill the rest of this function 
 
-        for fM, info in msh.Face.items():
-            eM = info['owner']; eP = info['neigh']
-            normal = info['normal']
-            area   = info['area']
-            bc     = info['boundary']
-            
-            # weight = info['weight']
-            xM = msh.Element[eM]['ecenter']
-            xP = msh.Element[eP]['ecenter']
-            xF = info['center']
-            
-            gQA  = 0.5*(gQ[eM] + gQ[eP])
-        
-            # if(bc == 0 ):
-            qFA  = 0.5*(Qe[eM] + Qe[eP])
-            dx  =  xF - 0.5*(xP + xM)
-            # print(gQA.shape, gQA[:][0])
-
-            qf  = qFA + 0.5*( gQA[:, 0]* dx[0] + gQA[:, 1]* dx[1])
-            if(msh.dim == 3):
-                qf = qf + 0.5*gQA[:, 2]* dx[2]
-
-            if(bc !=0 ):
-                qf = Qb[info['bcid']]                
-                gradQ[eM,:, 0] = gradQ[eM, :, 0] + qf*area*normal[0]
-                gradQ[eM,:, 1] = gradQ[eM, :, 1] + qf*area*normal[1]
-                if(msh.dim == 3):
-                    gradQ[eM, :, 2] = gradQ[eM, :, 2] + qf[:]*area*normal[2]
-            else:    
-                gradQ[eM,:, 0] = gradQ[eM, :, 0] + qf*area*normal[0]
-                gradQ[eM,:, 1] = gradQ[eM, :, 1] + qf*area*normal[1]
-                if(msh.dim == 3):
-                    gradQ[eM, :, 2] = gradQ[eM, :, 2] + qf[:]*area*normal[2]
-
-                gradQ[eP,:, 0] = gradQ[eP, : , 0] - qf[:]*area*normal[0]
-                gradQ[eP,:, 1] = gradQ[eP, : , 1] - qf[:]*area*normal[1]
-                if(msh.dim == 3):
-                    gradQ[eP, :, 2] = gradQ[eP, :, 2] - qf[:]*area*normal[2]
-                            
-        for eM in msh.Element.keys():
-            vol = msh.Element[eM]['volume']
-            gradQ[eM] = gradQ[eM]/vol
 
         return gradQ
 #-------------------------------------------------------------------------------------------------#
@@ -213,44 +171,9 @@ class grad():
         msh = self.mesh
         Nfields = Qe.shape[1]
         gradQ = np.zeros((msh.Nelements, Nfields, msh.dim), float)
+       # Fill the rest of this function 
 
-        Qv = msh.cell2Node(Qe, Qb, 'average')
-
-        bcid = 0
-        for fM, info in msh.Face.items():
-            eM      = info['owner']
-            eP      = info['neigh']
-
-            bc     = info['boundary']
-            normal = info['normal']
-            area   = info['area']
-
-            verts   = info['nodes']
-            qf      = np.mean(Qv[verts], axis=0)
-            #integrate boundary faces
-            if(bc != 0):
-                qf   =  Qb[info['bcid']]
-                gradQ[eM, :, 0] = gradQ[eM, :, 0] + qf*area*normal[0]
-                gradQ[eM, :, 1] = gradQ[eM, :, 1] + qf*area*normal[1]
-                if(msh.dim == 3):
-                    gradQ[eM,:,2] = gradQ[eM,:,2] + qf*area*normal[2]
-         
-            #integrate internal faces
-            else:
-                gradQ[eM,:, 0] = gradQ[eM, :, 0] + qf*area*normal[0]
-                gradQ[eM,:, 1] = gradQ[eM, :, 1] + qf*area*normal[1]
-                if(msh.dim == 3):
-                    gradQ[eM,:, 2] = gradQ[eM, :, 2] + qf*area*normal[2]
-            
-                gradQ[eP,:, 0] = gradQ[eP, : , 0] - qf*area*normal[0]
-                gradQ[eP,:, 1] = gradQ[eP, : , 1] - qf*area*normal[1]
-                if(msh.dim == 3):      
-                    gradQ[eP,:, 2] = gradQ[eP, :, 2] - qf*area*normal[2]
-
-
-        for eM in msh.Element.keys():
-            vol = msh.Element[eM]['volume']
-            gradQ[eM] = gradQ[eM]/vol
+       
         return gradQ
 
 #-------------------------------------------------------------------------------------------------#
@@ -259,31 +182,8 @@ class grad():
         msh = self.mesh
         Nfields = Qe.shape[1]
         gradQ = np.zeros((msh.Nelements, Nfields, msh.dim), float)
+       # Fill the rest of this function 
 
-        for elm, info in msh.Element.items():
-            etype   = info['elementType']
-            nfaces  = msh.elmInfo[etype]['nfaces'] 
-
-            xM = info['ecenter']
-            qM = Qe[elm]
-
-            A = np.zeros((nfaces,  msh.dim), float)
-            b = np.zeros((Nfields, nfaces), float)
-            for face in range(nfaces):
-                bc = info['boundary'][face]
-                eP = info['neighElement'][face]
-                xP = msh.Element[eP]['ecenter']
-                qP = Qe[eP]
-
-                if(bc != 0):
-                    qP = Qb[info['bcid'][face]]
-                    xP = info['fcenter'][face]
-                  
-                A[face,:]   = xP[0:msh.dim] - xM[0:msh.dim]
-                b[:, face]  = qP - qM
-
-            for field in range(Nfields):
-                gradQ[elm, field, :] = np.linalg.pinv(A)@np.transpose(b[field, :])
                 
         return gradQ
 
@@ -294,34 +194,8 @@ class grad():
         msh = self.mesh
         Nfields = Qe.shape[1]
         gradQ = np.zeros((msh.Nelements, Nfields, msh.dim), float)
+       # Fill the rest of this function 
 
-        for elm, info in msh.Element.items():
-            etype   = info['elementType']
-            nfaces  = msh.elmInfo[etype]['nfaces'] 
-
-            xM = info['ecenter']
-            qM = Qe[elm]
-
-            A = np.zeros((nfaces,  msh.dim), float)
-            b = np.zeros((Nfields, nfaces), float)
-            for face in range(nfaces):
-                bc = info['boundary'][face]
-                eP = info['neighElement'][face]
-                xP = msh.Element[eP]['ecenter']
-                qP = Qe[eP]
-
-                if(bc != 0):
-                    qP = Qb[info['bcid'][face]] 
-                    xP = info['fcenter'][face]
-                    # print(qP)
-
-                wf = 1.0/ (np.linalg.norm(xP-xM))**2
-
-                A[face,:]   = wf*(xP[0:msh.dim] - xM[0:msh.dim])
-                b[:, face]  = wf*(qP - qM)
-
-            for field in range(Nfields):
-                gradQ[elm, field, :] = np.linalg.pinv(A)@np.transpose(b[field, :])
                 
         return gradQ
 

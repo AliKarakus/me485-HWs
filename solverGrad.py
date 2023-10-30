@@ -31,23 +31,21 @@ parser = argparse.ArgumentParser(prog='Gradient',description='Compute Gradient u
 # Set default values for gradient computation
 parser.add_argument('--meshFile', default ='data/cavityQuad.msh', help='mesh file to be read')
 
-parser.add_argument('--method', type=str, default='WEIGHTED-LEAST-SQUARES', \
+parser.add_argument('--method', type=str, default='GREEN-GAUSS-CELL', \
 	choices=['GREEN-GAUSS-CELL', 'GREEN-GAUSS-NODE', 'LEAST-SQUARES', 'WEIGHTED-LEAST-SQUARES'],\
-	help='Gradient Reconstruction algorithm')
+	help='Gradient reconstruction algorithm')
 
-parser.add_argument('--Correct', type=bool, default=True, help='Correction for GGCB reconstruction')
+parser.add_argument('--Correct', type=bool, default=False, help='Correction for GGCB reconstruction')
 parser.add_argument('--Nfields', type=int, default=1, help='Number of fields')
 parser.add_argument('--dim', type=int, default=2, choices= [2,3], help='Dimension of the proble ')
 parser.add_argument('--IC', type = initialCond, default = initialCond, help='Initial condition function')
 parser.add_argument('--BC', type = boundaryCond, default = boundaryCond, help='Boundary condition function')
 args = parser.parse_args()
 
-
-# print(vars(args))
 # Create Boundary Field Defined on Boundary Faces 
 time = 0.0; 
 
-#-----CREATE MESH and CONNECTIVITY
+#-----CREATE MESH and CONNECTIVITY----------#
 # Create mesh class and read mesh file
 # Read mesh file and setup geometry and connections
 msh = base(args.meshFile)
@@ -68,15 +66,17 @@ Qb   = grd.createBfield(Qe)
 # Compute the gradient
 gradQ = grd.compute(Qe, Qb)
 
+#-------------Compute your errors below---------------#
 
 
 
-#--POSTPROCESS GRADIENT: 
-# Interpolate gradient field to faces
-gradQf = grd.interpolateToFace(Qe, Qb, gradQ)
-# Get gradient at boundaries
-gradQb = grd.extractBoundaryFromFace(gradQf)
-# Get node values using inverse distance averaging
-gradQv = msh.cell2Node(gradQ,  gradQb, 'average')
-# Plot field
-msh.plotVTU("grad.vtu", gradQv)
+
+# #--POSTPROCESS GRADIENT: 
+# # Interpolate gradient field to faces
+# gradQf = grd.interpolateToFace(Qe, Qb, gradQ)
+# # Get gradient at boundaries
+# gradQb = grd.extractBoundaryFromFace(gradQf)
+# # Get node values using inverse distance averaging
+# gradQv = msh.cell2Node(gradQ,  gradQb, 'average')
+# # Plot field
+# msh.plotVTU("grad.vtu", gradQv)
