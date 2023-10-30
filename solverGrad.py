@@ -68,6 +68,9 @@ Qb   = grd.createBfield(Qe)
 # Compute the gradient
 gradQ = grd.compute(Qe, Qb)
 
+
+
+
 #--POSTPROCESS GRADIENT: 
 # Interpolate gradient field to faces
 gradQf = grd.interpolateToFace(Qe, Qb, gradQ)
