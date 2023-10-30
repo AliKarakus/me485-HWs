@@ -70,13 +70,3 @@ gradQ = grd.compute(Qe, Qb)
 
 
 
-
-# #--POSTPROCESS GRADIENT: 
-# # Interpolate gradient field to faces
-# gradQf = grd.interpolateToFace(Qe, Qb, gradQ)
-# # Get gradient at boundaries
-# gradQb = grd.extractBoundaryFromFace(gradQf)
-# # Get node values using inverse distance averaging
-# gradQv = msh.cell2Node(gradQ,  gradQb, 'average')
-# # Plot field
-# msh.plotVTU("grad.vtu", gradQv)
