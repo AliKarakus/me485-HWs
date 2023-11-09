@@ -171,8 +171,10 @@ class grad():
         msh = self.mesh
         Nfields = Qe.shape[1]
         gradQ = np.zeros((msh.Nelements, Nfields, msh.dim), float)
+        # Get node values from cell-centers
+        Qv = msh.cell2Node(Qe, Qb, 'average')
        # Fill the rest of this function 
-
+        
        
         return gradQ
 
