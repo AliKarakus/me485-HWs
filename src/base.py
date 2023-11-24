@@ -48,8 +48,7 @@ base manager
 #-------------------------------------------------------------------------------------------------#
     def createFfield(self, Nfields, dim):
         return np.zeros((self.NFaces, Nfields, dim), float)
- 
-#-------------------------------------------------------------------------------------------------#
+#-------------------------------------------------------------------------------------------------#                
     def cell2Node(self, Qe, Qb, method):
         shape = Qe.shape; dim = 1
         if(len(shape) == 3):
@@ -67,23 +66,19 @@ base manager
                 for vrt, info in self.Node.items():
                     elements = info['element']
                     bc       = info['boundary']
+                    xv       = info['coord']
                     Qv[vrt]  = 0.0
                     sk = 0
-                    for e in range(len(elements)):
-                        eid = elements[e]
-                        wi = self.Node[vrt]['weight'][sk]
-                        Qv[vrt] = Qv[vrt] + wi*Qe[eid]
-                        sk = sk+1
-
-                    if(bc != 0 ):
-                        bcs = info['fboundary']
-                        for f in range(len(bcs)):
-                            if(bcs[f] !=0 ):
-                                wi             = self.Node[vrt]['weight'][sk]
-                                global_face_Id = info['face'][f]
-                                qb             = Qb[self.Face[global_face_Id]['bcid']]
-                                Qv[vrt] = Qv[vrt] + wi*qb
-                                sk = sk + 1 
+                    if(bc):
+                        # qb     = Qb[self.Face[global_face_Id]['bcid']]
+                        qb = Qb[info['bcid']]
+                        Qv[vrt] = qb
+                    else:
+                        for e in range(len(elements)):
+                            eid = elements[e]
+                            wi = self.Node[vrt]['weight'][sk]
+                            Qv[vrt] = Qv[vrt] + wi*Qe[eid]
+                            sk = sk+1
         return Qv                  
 #-------------------------------------------------------------------------------------------------#
     def plotVTU(self, fileName, Q):
