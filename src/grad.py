@@ -222,8 +222,7 @@ class grad():
     def greenGaussNode(self, Qe, Qb):
         msh = self.mesh
         Nfields = Qe.shape[1]
-        gradQ = np.zeros((msh.Nelements, Nfields, msh.dim), float)
-        
+        gradQ = np.zeros((msh.Nelements, Nfields, msh.dim), float)       
         Qbv   = self.createVertexBfield(Qe)
 
         Qv = msh.cell2Node(Qe, Qbv, 'average')
@@ -264,6 +263,7 @@ class grad():
         for eM in msh.Element.keys():
             vol = msh.Element[eM]['volume']
             gradQ[eM,:,:] = gradQ[eM,:,:]/vol
+            
         return gradQ
 
 #-------------------------------------------------------------------------------------------------#
