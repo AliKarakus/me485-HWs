@@ -37,9 +37,9 @@ mesh
             'fnodes': [[0, 1], [1, 2], [2, 0]]},
             3: {'name': 'quad', 'nfaces': 4, 'nverts': 4, 'ftype': 1,
             'fnodes': [[0, 1], [1, 2], [2, 3], [3, 0]]},
-            41: {'name': 'penta', 'nfaces': 5, 'nverts': 5, 'ftype':1,
+            4: {'name': 'penta', 'nfaces': 5, 'nverts': 5, 'ftype':1,
             'fnodes': [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]]},
-            4: {'name': 'tet', 'nfaces': 4, 'nverts': 4, 'ftype': 2,
+            5: {'name': 'tet', 'nfaces': 4, 'nverts': 4, 'ftype': 2,
             'fnodes': [[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]]},
             6: {'name': 'hex', 'nfaces': 6, 'nverts': 8, 'ftype': 3,
             'fnodes': [[0, 1, 2, 3], [0, 1, 4, 5], [1, 2, 5, 6], 
@@ -233,30 +233,69 @@ mesh
 # This routine creates vertex -> element connectivity 
 # mesh.EToV[vertex_id] gives list of elements connected to this vertex 
 #-------------------------------------------------------------------------------------------------#
+    # def getNodeWights(self):
+    #     for vrtx, info in self.Node.items():
+    #         elements = info['element']
+    #         bc       = info['boundary']
+    #         xv       = info['coord']
+
+    #         if(bc==0):
+    #             print(info)
+    #             for elm in range(len(elements)):
+    #                 eid = elements[elm]
+    #                 xe  = self.Element[eid]['ecenter']
+    #                 wi  = 1.0 / sp.linalg.norm(xv-xe)**2
+    #                 self.Node[vrtx]['weight'].append(wi)
+
+
+
+    #         # # first  
+    #         # for elm in range(len(elements)):
+    #         #     eid = elements[elm]
+    #         #     xe  = self.Element[eid]['ecenter']
+    #         #     wi  = 1.0 / sp.linalg.norm(xv-xe)**2
+    #         #     self.Node[vrtx]['weight'].append(wi)
+
+    #         # if(bc != 0):
+    #         #     bcs = info['fboundary']
+    #         #     for f in range(len(bcs)):
+    #         #         if(bcs[f] != 0):
+    #         #             faceid = info['face'][f]
+    #         #             xf     = self.Face[faceid]['center']
+    #         #             wi     = 1.0 / sp.linalg.norm(xv-xf)**3
+    #         #             self.Node[vrtx]['weight'].append(wi)
+
+    #         total_weight              = sp.sum(self.Node[vrtx]['weight'])
+    #         self.Node[vrtx]['weight'] =  self.Node[vrtx]['weight']/total_weight
+#-------------------------------------------------------------------------------------------------#
+# This routine creates vertex -> element connectivity 
+# mesh.EToV[vertex_id] gives list of elements connected to this vertex 
+#-------------------------------------------------------------------------------------------------#
     def getNodeWights(self):
+        sk = 0
         for vrtx, info in self.Node.items():
             elements = info['element']
             bc       = info['boundary']
             xv       = info['coord']
 
-            # first  
-            for elm in range(len(elements)):
-                eid = elements[elm]
-                xe  = self.Element[eid]['ecenter']
-                wi  = 1.0 / sp.linalg.norm(xv-xe)**2
+            # print(vrtx, bc)
+
+            if(bc):
+                wi = 1.0; 
                 self.Node[vrtx]['weight'].append(wi)
+                self.Node[vrtx]['bcid'] = sk
+                sk += 1
+            else:
+                for elm in range(len(elements)):
+                    eid = elements[elm]
+                    xe  = self.Element[eid]['ecenter']
+                    wi  = 1.0 / sp.linalg.norm(xv-xe)**2
+                    self.Node[vrtx]['weight'].append(wi)
 
-            if(bc != 0):
-                bcs = info['fboundary']
-                for f in range(len(bcs)):
-                    if(bcs[f] != 0):
-                        faceid = info['face'][f]
-                        xf     = self.Face[faceid]['center']
-                        wi     = 1.0 / sp.linalg.norm(xv-xf)**3
-                        self.Node[vrtx]['weight'].append(wi)
+                total_weight              = sp.sum(self.Node[vrtx]['weight'])
+                self.Node[vrtx]['weight'] =  self.Node[vrtx]['weight']/total_weight
 
-            total_weight              = sp.sum(self.Node[vrtx]['weight'])
-            self.Node[vrtx]['weight'] =  self.Node[vrtx]['weight']/total_weight
+        self.NBVertices = sk
 #-------------------------------------------------------------------------------------------------#
     def connectElements(self):
  # Check if EToV and EToE are ready
@@ -413,21 +452,15 @@ mesh
                 if(info['boundary'][f] == 0 ):                    
                     #normal distance based wights
                     if(self.weightMethod == 'distance'):
-                        # # owwner element
-                        # dfdxM   = info['fcenter'][f] - info['ecenter']
-                        # normal  = info['normal'][f]
-
-                        # #neigbor element of the face
-                        # eP     = self.Element[elm]['neighElement'][f]
-                        # dfdxP  = self.Element[eP]['ecenter'] -  info['fcenter'][f]
-
-                        # weight = sp.dot(dfdxM, normal)/sp.dot(dfdxM + dfdxP, normal)
-
                         #neigbor element of the face
                         eP     = self.Element[elm]['neighElement'][f]
                         dfdxF  = self.Element[eP]['ecenter'] -  info['fcenter'][f]
                         dfdxE  = self.Element[eP]['ecenter'] -  info['ecenter']
-                        weight = sp.linalg.norm(dfdxF)/sp.linalg.norm(dfdxE)
+
+                        normf = sp.linalg.norm(dfdxF)**1
+                        norme = sp.linalg.norm(dfdxE)**1
+
+                        weight = normf/norme
                     if(self.weightMethod == 'volume'):
                         vM     = info['volume']
                         eP     = self.Element[elm]['neighElement'][f]
@@ -538,6 +571,7 @@ mesh
             v1 = self.Node[vrtx[0]]['coord'] 
             v2 = self.Node[vrtx[1]]['coord']
             v3 = self.Node[vrtx[2]]['coord']
+            v4 = self.Node[vrtx[3]]['coord']
             nn = 0.5*sp.cross( v2 - v1, v3-v1) + 0.5*sp.cross(v2-v3,v4-v3)
             return  nn/sp.linalg.norm(nn)
 #-------------------------------------------------------------------------------------------------#   
