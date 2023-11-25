@@ -39,7 +39,9 @@ class diff():
         self.grd.set(gargs)
         self.bcFunc = args.BC
 
+        # Set diffusion coefficient
         self.Ke = self.setFromFunction(args.DC)
+        # Set source term
         self.Qs = self.setFromFunction(args.DS)    
 #-------------------------------------------------------------------------------------------------#
     def assemble(self, Qe, Qb):
@@ -103,15 +105,16 @@ class diff():
         msh = self.mesh
         # Create dummy memory to hold indices and values of the sparse matrix
         # A(i,j) = val, i goes to "rows", j goes to "cols"
-        # Note that we dont know the exact number nonzero elements so give a large value (5)
+        # Note that we don't know the exact number of nonzero elements so give a large value (5)
         rows = np.zeros((5*msh.Nelements), int) -1
         cols = np.zeros((5*msh.Nelements), int) -1
         vals = np.zeros((5*msh.Nelements), float) -1
+        
         # RHS vector (b in the homework) is not sparse
         rhs  = np.zeros((msh.Nelements,1), float)
 
         # This holds the number of non-zero entries, 
-        # when ever you add an entry increase sk by one, i.e. sk = sk+1
+        # whenever you add an entry increase sk by one, i.e. sk = sk+1
         sk = 0
         for elm, info in msh.Element.items():
             # !!!!!!! Fill up this part!!!!!!
@@ -138,7 +141,8 @@ class diff():
         vals = vals[0:sk]
 
         # Convert (i,j,val) tuple to sparse matrix
-        A   = sp.sparse.coo_matrix((vals[:], (rows[:], cols[:])), shape=(msh.Nelements, msh.Nelements), dtype=float)
+        A   = sp.sparse.coo_matrix((vals[:], (rows[:], cols[:])), 
+            shape=(msh.Nelements, msh.Nelements), dtype=float)
         return A, rhs; 
 #-------------------------------------------------------------------------------------------------#
     def assembleCorrection(self, Qe, Qb):
@@ -148,7 +152,8 @@ class diff():
 
 #-------------------------------------------------------------------------------------------------#
     def solve(self, args, A, b):
-        # Define a callback function for solvers so that we can keep resid
+        #----------------------------------------------------------------#
+        # Define a callback function for solvers so that we can keep residuals
         res= []; iters = 0; 
         def report(xk):
             nonlocal iters
@@ -157,7 +162,7 @@ class diff():
             iters = iters+1
 
         msh = self.mesh
-
+        #----------------------------------------------------------------#
         # Define Preconditioners for the solvers
         if(args.linPrecond == 'JACOBI'):
             A = sp.sparse.csr_matrix(A)
@@ -172,7 +177,7 @@ class diff():
             M =  Ml.aspreconditioner(cycle='V')        
         else:
             M = None
-
+        #----------------------------------------------------------------#
         TOL = args.linTolerance
         X = np.zeros((self.mesh.Nelements,1), float)
         
@@ -187,7 +192,8 @@ class diff():
 
             print(args.linSolver, 'is converged in', iters,'iterations with tolerance of', TOL, 
                 'using', args.linPrecond, 'preconditioner')
-        
+            #----------------------------------------------------------------#
+            # plot the residual in semilog scale
             plt.semilogy(res, color='k', linestyle ='dashed', 
                 marker='o', markeredgecolor='r', markerfacecolor='b', linewidth= 2); 
             plt.xlabel('Iteration Number'); 

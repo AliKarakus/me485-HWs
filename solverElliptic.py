@@ -74,21 +74,19 @@ parser.add_argument('--linPrecond', type=str, default='AMG', choices=['JACOBI', 
 
 args = parser.parse_args()
 time = 0.0
-#------------------------------------------------------------------------------#
+#----------------------------------------------------------------#
 # Read mesh file and setup geometry and connections
 msh = base(args.meshFile)
 
 #Create intitial condition, boundary condition and source term
 Qe = msh.createEfield(args.Nfields)
-Qs = msh.createEfield(args.Nfields)
 Qc = msh.createEfield(args.Nfields)
+Qs = msh.createEfield(args.Nfields)
 for elm,info in msh.Element.items():
 	x = info['ecenter']
 	Qe[elm][:] = args.IC(0.0, x)
-	Qc[elm][:] = args.DC(0.0, x)
-	Qs[elm][:] = args.DS(0.0, x)
 
-#------------------------------------------------------------------------------#
+#----------------------------------------------------------------#
 #COMPUTE DIFFUSION
 dff  = diff(msh);  dff.set(args)
 Qbf  = dff.createFaceBfield(Qe)
@@ -96,13 +94,13 @@ Qbf  = dff.createFaceBfield(Qe)
 # forms the system A*q + b = 0
 A, b  = dff.assemble(Qe, Qbf)
 Qe     = dff.solve(args, A, -b)
-#------------------------------------------------------------------------------#
-
-#--POSTPROCESS DIFFUSION: 
+#----------------------------------------------------------------#
+#POSTPROCESS DIFFUSION: 
 Qbv  = dff.createVertexBfield(Qe)
 Qv = msh.cell2Node(Qe,  Qbv, 'average')
 msh.plotVTU("diffusion.vtu", Qv)
 
+#----------------------------------------------------------------#
 # Compute Infinity Norm of Error
 linf = 0.0; l2 = 0.0
 for elm, info in msh.Element.items():
