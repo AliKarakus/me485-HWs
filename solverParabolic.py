@@ -1,17 +1,3 @@
-# This is to solve  a model problem
-#
-# 	div( k \cdot \grad q) + Q = 0
-# 	where
-# 		k 	: diffusion coefficient
-# 		Q 	: source term
-# 	Corresbonding discrete scheme will be
-# 		A*q + b  = 0
-# 		where 
-# 		A 	: system matrix including terms including q
-# 		b     : all explicit terms which are not function of q
-# then A q = -b  solve for q
-
-#------------------------------------------------------------------------------#
 import scipy as sp
 import numpy as np
 import mesh as mesh
@@ -24,9 +10,11 @@ from src import base as base
 from src import grad as grad
 from src import diff as diff
 
-#------------------------------------------------------------------------------#
+from src import timeStepper as timeStepper
+
+
 def initialCond(time,  x):
-	qi = x[0] + x[1]
+	qi = 0.0
 	return qi
 
 def boundaryCond(bc, time, x, qM):
@@ -47,34 +35,39 @@ def exactSolution(time, x):
 	exct = mth.sin(mth.pi*x[0])*mth.sin(mth.pi*x[1])
 	return exct
 
-#------------------------------------------------------------------------------#
+
 #-----PROBLEM SETUP:
-# Create parser 
-parser = argparse.ArgumentParser(prog='Diffusion',description='Compute Diffusion Equation using FVM',
+parser = argparse.ArgumentParser(prog='Parabolic',description='Compute Diffusion Equation using FVM',
                     epilog='--------------------------------')
-
-parser.add_argument('--meshFile', default ='data/cavityTri.msh', help='mesh file to be read')
-
-parser.add_argument('--method', type=str, default='NO-CORRECTION', 
-					choices=['MINIMUM-CORRECTION', 'ORTHOGONAL-CORRECTION', 'OVER-RELAXED-CORRECTION', 'NO-CORRECTION'], 
-					help='Diffusion formulation')
-
 parser.add_argument('--Nfields', type=int, default=1, help='Number of fields')
 parser.add_argument('--dim', type=int, default=2, choices= [2,3], help='Dimension of the problem')
+
+parser.add_argument('--timeMethod',  type=str, default='ADAMS-BASHFORTH', 
+					choices=['LSRK4', 'FORWARD-EULER', 'ADAMS-BASHFORTH', 'BACKWARD-EULER', 'BDF'])
+parser.add_argument('--timeOrder',  type=int, default=2, 
+	                choices=[2, 3], help='Order for AB and BDF methods')
+parser.add_argument('--meshFile', default ='data/cavityTri.msh', help='mesh file to be read')
+parser.add_argument('--method', type=str, default='NO-CORRECTION', \
+					choices=['MINIMUM-CORRECTION', 'NO-CORRECTION'], help='Diffusion formulation')
 
 parser.add_argument('--IC', type = initialCond, default = initialCond, help='Initial condition function')
 parser.add_argument('--BC', type = boundaryCond, default = boundaryCond, help='Boundary condition function')
 parser.add_argument('--DC', type = diffusionCoeff, default = diffusionCoeff, help='Diffusion coefficient function')
 parser.add_argument('--DS', type = diffusionSource, default = diffusionSource, help='Diffusion source function')
 
+parser.add_argument('--tstart',      type=float, default = 0.0,    help='initial time')
+parser.add_argument('--tend',        type=float, default = 1.0,    help='final time')
+parser.add_argument('--dt',          type=float, default = 0.001,   help='time step size')
+parser.add_argument('--Noutput',     type=int,   default = 100,     help='output frequency')
 
 parser.add_argument('--linSolver', type=str, default='CG', choices=['DIRECT','CG','GMRES'], help='Linear solver')
 parser.add_argument('--linTolerance', type=float, default=1e-8, help='Linear solver tolerance')
 parser.add_argument('--linPrecond', type=str, default='AMG', choices=['JACOBI', 'ILU', 'AMG'])
 
 args = parser.parse_args()
-time = 0.0
-#------------------------------------------------------------------------------#
+Nsteps = int(np.ceil((args.tend - args.tstart)/args.dt)); 
+dt = (args.tend - args.tstart)/Nsteps
+
 # Read mesh file and setup geometry and connections
 msh = base(args.meshFile)
 
@@ -88,19 +81,19 @@ for elm,info in msh.Element.items():
 	Tc[elm][:] = args.DC(0.0, x)
 	Ts[elm][:] = args.DS(0.0, x)
 
-#------------------------------------------------------------------------------#
 #COMPUTE DIFFUSION
 dff  = diff(msh);  dff.set(args)
 Tbf  = dff.createFaceBfield(Te)
 
-# forms the system A*q + b = 0
-A, b  = dff.assemble(Te, Tbf)
-T     = dff.solve(args, A, -b)
-#------------------------------------------------------------------------------#
+timeStepper = timeStepper(msh,dff)
+timeStepper.set(args)
+
+# Integrate 
+timeStepper.run(Te, Tbf)
 
 #--POSTPROCESS DIFFUSION: 
-Tbv  = dff.createVertexBfield(T)
-Tv = msh.cell2Node(T,  Tbv, 'average')
+Tbv  = dff.createVertexBfield(Te)
+Tv = msh.cell2Node(Te,  Tbv, 'average')
 msh.plotVTU("diffusion.vtu", Tv)
 
 # Compute Infinity Norm of Error
@@ -109,12 +102,12 @@ for elm, info in msh.Element.items():
 	x = info['ecenter']
 	vol = info['volume']
 	exct = exactSolution(0.0, x)
-	soln = T[elm]
+	soln = Te[elm]
 	err =  abs(exct -soln)
-
 	l2 = l2 + vol*err**2
 	if err >linf: linf = err;
 
 print("Infinity Norm of error: %.8e" %linf)
 print("L2 Norm of error: %.8e" %l2)
 
+# print(msh.Face[10])
