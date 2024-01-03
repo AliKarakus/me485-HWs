@@ -3,3 +3,4 @@ from .base import base
 from .grad import grad
 from .diff import diff
 from .timeStepper import timeStepper
+from .euler import euler
