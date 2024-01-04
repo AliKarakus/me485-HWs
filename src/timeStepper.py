@@ -12,7 +12,7 @@ class timeStepper():
         self.N    = _mesh.Nelements
         self.solver =_solver
 #-------------------------------------------------------------------------------------------------#
-    #This function sets the time steppers
+    # def set(self, Nfields, method,  correct, bcFunc):
     def set(self, args):
         self.Nfields      = args.Nfields
         self.method       = args.timeMethod
@@ -31,9 +31,9 @@ class timeStepper():
         elif(self.method == 'BDF'):
             self.setBDF(args)
         else:
-            print('the time method -%s-  is not implemented' %self.method)
+            print('the time method -- %s --  is not implemented' %self.method)
 #-------------------------------------------------------------------------------------------------#
-    #This function sets the time steppers
+    # def set(self, Nfields, method,  correct, bcFunc):
     def run(self, Qe, Qb):
         if(self.method == 'LSRK4'):
             self.runLSRK4(Qe, Qb)
@@ -52,7 +52,6 @@ class timeStepper():
         self.Nsteps = int(np.ceil((args.tend - args.tstart)/args.dt)); 
         self.dt = (args.tend - args.tstart)/self.Nsteps
         self.time = args.tstart
-        self.step = 0
 
         self.Nstage = 5
         self.resq = np.zeros((self.N, self.Nfields), dtype=float)
@@ -86,15 +85,15 @@ class timeStepper():
         self.step = 0
 #-------------------------------------------------------------------------------------------------#
     def setAdamsBashforth(self,args):
-        # Coefficients for different orders
-        # self.coeff = {1: [1.0], 2:[1.5 , -0.5], 3:[23.0/12.0, -16.0/12.0, 5.0/12.0]}
-        #-----------------------------------------------------#
-        # COMPLETE THIS FUNCTION
-
-
-
-
-
+        self.max_order = args.timeOrder
+        self.Nsteps = int(np.ceil((args.tend - args.tstart)/args.dt)); 
+        self.dt = (args.tend - args.tstart)/self.Nsteps
+        self.time = args.tstart
+        #storage for the history i.e. t - dt
+        self.qm1 = np.zeros((self.N, self.Nfields), dtype=float)
+        self.qm2 = np.zeros((self.N, self.Nfields), dtype=float)
+        self.coeff = {1: [1.0], 2:[1.5 , -0.5], 3:[23.0/12.0, -16.0/12.0, 5.0/12.0]}
+        self.step = 0
 #-------------------------------------------------------------------------------------------------#
     def setBackwardEuler(self,args):
         self.Nsteps = int(np.ceil((args.tend - args.tstart)/args.dt)); 
@@ -103,22 +102,19 @@ class timeStepper():
         self.step = 0
 #-------------------------------------------------------------------------------------------------#
     def setBDF(self,args):
-        # Coefficients for different orders
-        #self.coeff = {1: [1.0], 2:[4.0/3.0 , -1.0/3.0], 3:[18/11.0, -9.0/11.0, 2.0/11.0]}
-        #-----------------------------------------------------#
-        # COMPLETE THIS FUNCTION
-
-
-
-
-
-
-
+        self.max_order = args.timeOrder
+        self.Nsteps = int(np.ceil((args.tend - args.tstart)/args.dt)); 
+        self.dt = (args.tend - args.tstart)/self.Nsteps
+        self.time = args.tstart
+        #storage for the history i.e. t - dt
+        self.qm1 = np.zeros((self.N, self.Nfields), dtype=float)
+        self.qm2 = np.zeros((self.N, self.Nfields), dtype=float)
+        self.coeff = {1: [1.0], 2:[4.0/3.0 , -1.0/3.0], 3:[18/11.0, -9.0/11.0, 2.0/11.0]}
+        self.step = 0
 #-------------------------------------------------------------------------------------------------#
     def runLSRK4(self, Qe, Qb):
-        #-----------------------------------------------------#
+        self.step = 0
         self.report(Qe)
-        #-----------------------------------------------------#
         #for every time step        
         for step in range(self.Nsteps):
             # For every stage
@@ -129,46 +125,62 @@ class timeStepper():
                 self.resq = self.rk4a[stage]*self.resq + self.dt*self.rhsq
                 Qe       += self.rk4b[stage]*self.resq
 
-            self.step = step
-            #dump out an output file
-            if step % self.Noutput==0 and step != 0:
-                self.report(Qe)
-            
             #increase time
             self.time += self.dt
+            self.step = step+1
+
+            #dump out an output file
+            if self.step % self.Noutput == 0:
+                self.report(Qe)
 #-------------------------------------------------------------------------------------------------#
     def runForwardEuler(self, Qe, Qb):
-        #-----------------------------------------------------#
-        self.report(Qe)
-        #-----------------------------------------------------#
         for step in range(self.Nsteps):
             # Call integration function
             Qe  += self.dt*self.solver.rhsQ(Qe, Qb)
-
+            self.time += self.dt
             self.step = step
 
             #produce an output file for postprocessing
-            if step % self.Noutput==0 and step != 0:
+            if step % self.Noutput == 0:
                 self.report(Qe)
-
-            self.time += self.dt
-
 #-------------------------------------------------------------------------------------------------#
     def runAdamsBashforth(self, Qe, Qb):
         #-----------------------------------------------------#
         self.report(Qe)
         #-----------------------------------------------------#
-        # COMPLETE THIS FUNCTION
+        if(self.max_order == 3):
+            self.qm2 = Qe; self.qm1 = Qe
 
+        if(self.max_order==2):
+            self.qm1 = Qe
+        #-----------------------------------------------------#
+        # Second order implementation
+        order = 1;
+        for step in range(self.Nsteps):            
+            # Call integration function
+            Qnew  =  self.coeff[order][0]*Qe + self.dt*self.solver.rhsQ(Qe, Qb)
+            if(order>1): 
+                Qnew += self.coeff[order][1]*self.qm1
+            elif(order>2):
+                Qnew += self.coeff[order][2]*self.qm2
 
+            # second-order step if step>=1
+            if(step==0 and self.max_order>1): order +=1;  
+            # move to third order step if step>=2
+            if(step==1 and self.max_order>2): order +=1;
 
+            # Update history
+            if(order>2): self.qm2 = self.qm1;
+            if(order>1): self.qm1 = Qe;
+            Qe = Qnew
 
+            # Increase time
+            self.time += self.dt
+            self.step  = step
 
-
-
-
-
-        
+            #produce an output file for postprocessing
+            if step % self.Noutput==0 and step != 0:
+                self.report(Qe)
 #-------------------------------------------------------------------------------------------------#
     def runBackwardEuler(self, Qe, Qb):
         #-----------------------------------------------------#
@@ -196,38 +208,67 @@ class timeStepper():
             # Call integration function
             Qe[:] = self.solver.solve(self.solver.args, Ap, rhs);
             rhs = self.dt*b  + np.multiply(Qe, vol) 
+            self.time += self.dt
             self.step = step
 
             if step % self.Noutput == 0:
                 self.report(Qe)
 
-            self.time += self.dt
 #-------------------------------------------------------------------------------------------------#
     def runBDF(self, Qe, Qb):
         #-----------------------------------------------------#
         self.report(Qe)
         #-----------------------------------------------------#
-        # COMPLETE THIS FUNCTION
-
-
-
-
-
-
-
-
-
-
+        # First form the sytem matrices for integration
+        A, b  = self.solver.assemble(Qe, Qb)
         
+        #-----------------------------------------------------#
+        vals = np.zeros(self.mesh.Nelements, float);
+        vol = vals.reshape((self.mesh.Nelements,1))
+        for elm, info in self.mesh.Element.items():
+            vol[elm] = info['volume']
+
+        Ap = sp.sparse.spdiags(np.transpose(vol),0, m=self.mesh.Nelements, n=self.mesh.Nelements,
+         format=A.getformat())
+        #-----------------------------------------------------#
+        # (qn1 - qn0)*V/ dt = L(q) = [A(qn1) + b]
+        # [qn1*V - dt*A(qn1)] = qn0*V + dt*b
+        # Ap (qn1) = rhs
+        Ap = Ap - self.dt*A
+        #-----------------------------------------------------#
+        order = 1
+        for step in range(self.Nsteps):
+            if(order==1):
+               rhs = self.dt*b  + self.coeff[order][0]*np.multiply(Qe, vol)
+               self.qm1 = Qe
+               if(self.max_order>1): order += 1; 
+            elif(order==2):
+                rhs = self.dt*b  + np.multiply(self.coeff[order][0]*Qe\
+                                              + self.coeff[order][1]*self.qm1, vol) 
+                self.qm2 = self.qm1
+                self.qm1 = Qe
+                if(self.max_order>2): order += 1;                 
+            elif(order==3):
+                rhs = self.dt*b  + np.multiply(self.coeff[order][0]*Qe\
+                                              + self.coeff[order][1]*self.qm1\
+                                              + self.coeff[order][2]*self.qm2, vol)
+                self.qm2 = self.qm1
+                self.qm1 = Qe 
+
+            # Call integration function
+            Qe[:] = self.solver.solve(self.solver.args, Ap, rhs);
+            self.time += self.dt
+            self.step  = step
+
+            if step % self.Noutput == 0:
+                self.report(Qe)
 
 #-------------------------------------------------------------------------------------------------#
     def report(self, Pe):
-        # Print Out Initial Solution
-        Pb  = self.solver.extractBfield(Pe)
-        Pv = self.solver.mesh.cell2Node(Pe,  Pb, 'average')
-        fname = "output_{:04d}.vtu".format(self.frame)
-        self.solver.mesh.plotVTU(fname, Pv)
-        print('time: %.4e tstep: %d' %(self.time, self.step))
-        self.frame += 1
+      Pv = self.solver.mesh.cell2Node(Pe, 'average')
+      fname = "output_{:04d}.vtu".format(self.frame)
+      self.solver.mesh.plotVTU(fname, Pv)
+      print('time: %.4e tstep: %d' %(self.time, self.step))
+      self.frame += 1
 
 
