@@ -74,22 +74,24 @@ class grad():
     def createFaceBfield(self, Qe):
         BCField =  np.zeros((self.mesh.NBFaces, self.Nfields), float)
         for face, info in self.mesh.Face.items():
-            bc    = info['boundary']
-            coord = info['center']
+            bc     = info['boundary']
+            coord  = info['center']
+            normal = info['normal']
             if(bc !=0):
                 bcid = info['bcid']
                 eM   = info['owner']
-                BCField[bcid]   = self.bcFunc(bc, 0.0, coord, Qe[eM,:])
+                BCField[bcid,:]   = self.bcFunc(bc, 0.0, coord, normal, Qe[eM,:])
         return BCField
 #-------------------------------------------------------------------------------------------------#
     def createVertexBfield(self, Qe):
         BCField =  np.zeros((self.mesh.NBVertices, self.Nfields), float)
         for vrtx, info in self.mesh.Node.items():
-            bc    = info['boundary']
-            coord = info['coord']
+            bc     = info['boundary']
+            coord  = info['coord']
+            normal = info['normal']
             if(bc):
                 bcid = info['bcid']
-                BCField[bcid]   = self.bcFunc(bc, 0.0, coord, 0.0)
+                BCField[bcid,:]   = self.bcFunc(bc, 0.0, coord, normal, 0.0)
         return BCField
 
 #-------------------------------------------------------------------------------------------------#
@@ -319,7 +321,7 @@ class grad():
             nfaces  = msh.elmInfo[etype]['nfaces'] 
 
             xM = info['ecenter']
-            qM = Qe[elm]
+            qM = Qe[elm,:]
 
             A = np.zeros((nfaces,  msh.dim), float)
             b = np.zeros((Nfields, nfaces), float)
