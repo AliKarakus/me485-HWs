@@ -49,36 +49,28 @@ base manager
     def createFfield(self, Nfields, dim):
         return np.zeros((self.NFaces, Nfields, dim), float)
 #-------------------------------------------------------------------------------------------------#                
-    def cell2Node(self, Qe, Qb, method):
-        shape = Qe.shape; dim = 1
-        if(len(shape) == 3):
-            dim = shape[2]
-
+    def cell2Node(self, Qe, method):
+        shape = Qe.shape;
         Nfields = shape[1]
 
-        Qv = np.zeros((self.Nverts, Nfields, dim), float)
-        if(Qe.shape[1] != Qv.shape[1]):
-            print('Cell2Node: dimesion of the matrtices are not equal: exiting')
-            return -1
-        else:
-
-            if(method == 'average'):
-                for vrt, info in self.Node.items():
-                    elements = info['element']
-                    bc       = info['boundary']
-                    xv       = info['coord']
-                    Qv[vrt]  = 0.0
-                    sk = 0
-                    if(bc):
-                        # qb     = Qb[self.Face[global_face_Id]['bcid']]
-                        qb = Qb[info['bcid']]
-                        Qv[vrt] = qb
-                    else:
-                        for e in range(len(elements)):
-                            eid = elements[e]
-                            wi = self.Node[vrt]['weight'][sk]
-                            Qv[vrt] = Qv[vrt] + wi*Qe[eid]
-                            sk = sk+1
+        Qv = np.zeros((self.Nverts, Nfields), float)
+        if(method == 'average'):
+            for vrt, info in self.Node.items():
+                elements = info['element']
+                bc       = info['boundary']
+                xv       = info['coord']
+                Qv[vrt, :]  = 0.0
+                sk = 0
+                # if(bc):
+                #     # qb     = Qb[self.Face[global_face_Id]['bcid']]
+                #     qb = Qb[info['bcid']]
+                #     Qv[vrt,:] = qb[:]
+                # else:
+                for e in range(len(elements)):
+                    eid = elements[e]
+                    wi = self.Node[vrt]['weight'][sk]
+                    Qv[vrt,:] = Qv[vrt,:] + wi*Qe[eid,:]
+                    sk = sk+1
         return Qv                  
 #-------------------------------------------------------------------------------------------------#
     def plotVTU(self, fileName, Q):
@@ -105,7 +97,7 @@ base manager
         fp.write("      <PointData Scalars=\"scalars\">\n");
         
         if (len(Q) != 0):
-            if(Q.shape[2] == 1):
+            if(Q.shape[1] == 1):
                 #write out pressure
                 fp.write("        <DataArray type=\"Float32\" Name=\"field\" Format=\"ascii\">\n")
                 for vrt, info in self.Node.items():
@@ -113,21 +105,28 @@ base manager
                     fp.write("%g\n" %Q[vrt, 0, 0])
                 fp.write("        </DataArray>\n")
 
-            if(Q.shape[2] == 2):
+            if(Q.shape[1] == 2):
                 #write out pressure
                 fp.write("        <DataArray type=\"Float32\" Name=\"field\" NumberOfComponents=\"2\" Format=\"ascii\">\n")               
                 for vrt, info in self.Node.items():            
                     fp.write("       ")
-                    fp.write("%g %g \n" %(Q[vrt][0][0], Q[vrt][0][1]))
+                    fp.write("%g %g \n" %(Q[vrt][0], Q[vrt][1]))
                 fp.write("        </DataArray>\n")
 
-            if(Q.shape[2] == 3):
-                print('right here')
+            if(Q.shape[1] == 3):
                 #write out pressure
                 fp.write("        <DataArray type=\"Float32\" Name=\"field\" NumberOfComponents=\"3\" Format=\"ascii\">\n")
                 for vrt, info in self.Node.items():            
                     fp.write("       ")
-                    fp.write("%g %g %g \n" %(Q[vrt][:][0], Q[vrt][:][1], Q[vrt][:][2]))
+                    fp.write("%g %g %g \n" %(Q[vrt][:][0], Q[vrt][1], Q[vrt][2]))
+                fp.write("        </DataArray>\n")
+
+            if(Q.shape[1] == 4):
+                #write out pressure
+                fp.write("        <DataArray type=\"Float32\" Name=\"euler2D\" NumberOfComponents=\"4\" Format=\"ascii\">\n")
+                for vrt, info in self.Node.items():            
+                    fp.write("       ")
+                    fp.write("%g %g %g %g\n" %(Q[vrt][0], Q[vrt][1], Q[vrt][2], Q[vrt][3]))
                 fp.write("        </DataArray>\n")
      
 
