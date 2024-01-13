@@ -272,30 +272,30 @@ mesh
 # mesh.EToV[vertex_id] gives list of elements connected to this vertex 
 #-------------------------------------------------------------------------------------------------#
     def getNodeWights(self):
-        sk = 0
-        for vrtx, info in self.Node.items():
-            elements = info['element']
-            bc       = info['boundary']
-            xv       = info['coord']
+      sk = 0
+      for vrtx, info in self.Node.items():
+        elements = info['element']
+        bc       = info['boundary']
+        xv       = info['coord']
 
-            # print(vrtx, bc)
+        # print(vrtx, bc)
 
-            if(bc):
-                wi = 1.0; 
-                self.Node[vrtx]['weight'].append(wi)
-                self.Node[vrtx]['bcid'] = sk
-                sk += 1
-            else:
-                for elm in range(len(elements)):
-                    eid = elements[elm]
-                    xe  = self.Element[eid]['ecenter']
-                    wi  = 1.0 / sp.linalg.norm(xv-xe)**2
-                    self.Node[vrtx]['weight'].append(wi)
+        # if(bc):
+        #     wi = 1.0; 
+        #     self.Node[vrtx]['weight'].append(wi)
+        #     self.Node[vrtx]['bcid'] = sk
+        #     sk += 1
+          # else:
+        for elm in range(len(elements)):
+          eid = elements[elm]
+          xe  = self.Element[eid]['ecenter']
+          wi  = 1.0 / sp.linalg.norm(xv-xe)**2
+          self.Node[vrtx]['weight'].append(wi)
 
-                total_weight              = sp.sum(self.Node[vrtx]['weight'])
-                self.Node[vrtx]['weight'] =  self.Node[vrtx]['weight']/total_weight
+        total_weight              = sp.sum(self.Node[vrtx]['weight'][:])
+        self.Node[vrtx]['weight'] =  self.Node[vrtx]['weight']/total_weight
 
-        self.NBVertices = sk
+      self.NBVertices = sk
 #-------------------------------------------------------------------------------------------------#
     def connectElements(self):
  # Check if EToV and EToE are ready
