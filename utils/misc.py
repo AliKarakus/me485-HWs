@@ -6,7 +6,6 @@
 def subclasses(cls, just_leaf=False):
     sc = cls.__subclasses__()
     ssc = [g for s in sc for g in subclasses(s, just_leaf)]
-
     return [s for s in sc if not just_leaf or not s.__subclasses__()] + ssc
 
 

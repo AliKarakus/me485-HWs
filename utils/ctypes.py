@@ -9,7 +9,7 @@ def platform_libname(name):
 
 def platform_dirs():
     # Find environment
-    libpaths = os.environ.get('PYBARAM_LIB_PATH', '')
+    libpaths = os.environ.get('MEFVM_LIB_PATH', '')
 
     # Add path for virtualenv
     virtpath = os.environ.get('VIRTUAL_ENV', '')

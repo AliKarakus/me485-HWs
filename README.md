@@ -1,5 +1,9 @@
-Homework 2
+Supplemant Codes for ME485 Codes for Fall2024
 
-In this homework, you are going to implement diffusion discretization (without non-orthogonality correction) in mefvm.  
+Code version = 2024.1 
 
-Required Modules: scipy, numpy, argparse, matplotlib
+Changes:
+	- MPI support
+	- Implicit Time Integrators
+	- Explicit Time Integrators
+	-

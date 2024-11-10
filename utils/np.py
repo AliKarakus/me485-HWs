@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-
-
+# Original code
+# https://github.com/PyFR/PyFR/blob/develop/pyfr/nputil.py
+# Modified by jspark
+# 
 import functools as ft
 import numpy as np
 

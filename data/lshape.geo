@@ -44,6 +44,3 @@ Transfinite Surface{13}={1,2,6,7};
 
 Recombine Surface '*' ;
 Mesh.Smoothing = 10;
-
-Physical Surface("Domain", 9) = {13, 15};
-Physical Line("Inflow", 1) = {1, 2, 3, 4, 5, 6, 7};
