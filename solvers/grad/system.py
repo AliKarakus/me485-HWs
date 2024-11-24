@@ -20,19 +20,6 @@ class GradSystem(BaseSystem):
         # Queue for MPI
         q = self._queue
         
-        if(self._grad_method=='green-gauss-node'):
-            self.eles.compute_avgv()
-            if self.vertex.mpi:
-                # Start MPI communication for Vertex
-                self.vertex.pack()
-                self.vertex.send(q)
-                self.vertex.recv(q)
-            if self.vertex.mpi:
-                # Finalize MPI communication
-                q.sync()
-                # Unpack (Sort vetex extremes)
-                self.vertex.unpack()
-
         # Compute solution at flux point (face center)
         self.eles.compute_fpts()
 
