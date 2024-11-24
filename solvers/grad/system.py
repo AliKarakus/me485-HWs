@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from solvers.base.system import BaseSystem
 from solvers.grad import GradElements, GradIntInters, GradMPIInters, GradBCInters, GradVertex
+import numpy as np
+import re
 
 
 class GradSystem(BaseSystem):
@@ -17,22 +19,19 @@ class GradSystem(BaseSystem):
 
         # Queue for MPI
         q = self._queue
-
+        
         if(self._grad_method=='green-gauss-node'):
             self.eles.compute_avgv()
-
-            # if self.vertex.mpi:
-            #     # Start MPI communication for Vertex
-            #     self.vertex.pack()
-            #     self.vertex.send(q)
-            #     self.vertex.recv(q)
-
-            # if self.vertex.mpi:
-            #     # Finalize MPI communication
-            #     q.sync()
-
-            #     # Unpack (Sort vetex extremes)
-            #     self.vertex.unpack()
+            if self.vertex.mpi:
+                # Start MPI communication for Vertex
+                self.vertex.pack()
+                self.vertex.send(q)
+                self.vertex.recv(q)
+            if self.vertex.mpi:
+                # Finalize MPI communication
+                q.sync()
+                # Unpack (Sort vetex extremes)
+                self.vertex.unpack()
 
         # Compute solution at flux point (face center)
         self.eles.compute_fpts()
@@ -42,16 +41,15 @@ class GradSystem(BaseSystem):
             self.mpiint.pack()
             self.mpiint.send(q)
             self.mpiint.recv(q)
+
         # if least squares, compute jumps at faces
-        if(self._grad_method=='least-square'):
+        if( self._grad_method=='least-square'   or  self._grad_method=='weighted-least-square'):
             # Compute Difference of solution at Inters
             self.iint.compute_delu()
             self.bint.compute_delu()
-
             if self.mpiint:
                 # Finalize MPI communication
                 q.sync()
-
                 # Compute Difference of solution at MPI Inters
                 self.mpiint.compute_delu()
         # if green-gauss, compute averages at faces
@@ -59,7 +57,6 @@ class GradSystem(BaseSystem):
             # Compute Difference of solution at Inters
             self.iint.compute_avgu()
             self.bint.compute_avgu()
-
             if self.mpiint:
                 # Finalize MPI communication
                 q.sync()
@@ -70,7 +67,10 @@ class GradSystem(BaseSystem):
         # Compute gradient
         self.eles.compute_grad()
 
-        self.post()
+        res = self.L2Norm()
+        print('L2 norm of gradient:', res)
+
+        # self.post()
 
 
         # # Compute extreme values at vertex
@@ -90,7 +90,7 @@ class GradSystem(BaseSystem):
         #     # Unpack (Sort vetex extremes)
         #     self.vertex.unpack()
 
-        # # Compute slope limiter and reconstruction
+        # Compute slope limiter and reconstruction
         # self.eles.compute_mlp_u()
         # self.eles.compute_recon()
 
@@ -105,7 +105,14 @@ class GradSystem(BaseSystem):
         # else:
         #     return 'none'
 
+    # Post-process
     def post(self, idx_in=0):
-        # Post-process
         self.eles.upts_in.idx = idx_in
         self.eles.post()
+
+     # Post-process
+    def L2Norm(self, idx_in=0):
+        self.eles.upts_in.idx = idx_in
+        L2 = self.eles.compute_L2_norm()
+        return L2 
+

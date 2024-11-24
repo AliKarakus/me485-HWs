@@ -43,7 +43,7 @@ class GradVertex(BaseVertex):
         t, e, _ = self._idx
         nvars = self.nvars
 
-        print(ivtx, self.nvtx)
+        # print(ivtx, self.nvtx)
 
         def cal_extv(i_begin, i_end, vext, *upts):
             for i in range(i_begin, i_end):
