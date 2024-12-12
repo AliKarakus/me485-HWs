@@ -7,7 +7,6 @@ from api.io import import_mesh, partition_mesh, export_soln
 from api.simulation import run, restart
 from inifile import INIFile
 from readers.native import NativeReader
-from solvers.grad import GradElements, GradIntInters, GradMPIInters, GradBCInters, GradVertex
 from geometry import get_geometry
 from solvers import get_system
 from backends import get_backend

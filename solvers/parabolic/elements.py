@@ -103,45 +103,63 @@ class ParabolicElements(BaseElements, ParabolicFluidElements):
 
 #-------------------------------------------------------------------------------#
     def _make_compute_norm(self):
-        import numba as nb
-        vol = self._vol
-        neles, nvars, ndims = self.neles, self.nvars, self.ndims
-        xc = self.xc.T    
+        #*************************# 
+        # get required data here
 
+
+
+
+        #*************************# 
         def run(upts):
-            resid = np.empty(2)
-            smin = 10000.0
-            for j in range(nvars):
-                s = 0
-                for i in nb.prange(neles):
-                    xi = xc[0, i]
-                    yi = xc[1, i]
-                    r = np.sqrt(xi*xi + yi*yi)
-                    C1 = 0.434294481903252
-                    C2 = 0.849485002168009
-                    exct = C1*np.log(r) + C2
-                    s += (exct-upts[j,i])**2*vol[i]
-                    smin = min(smin, abs(exct-upts[j,i]))
+        #*************************# 
+        # compute L2 norm in this function
+        # upts is the solution field
 
-                resid[0] = s
-                resid[1] = smin
 
-            return resid
+
+
+        #*************************# 
+
+            return norm
 
         return self.be.compile(run, outer=True)
 
 #-------------------------------------------------------------------------------#
     def _make_compute_fpts(self):
-        nvars, nface = self.nvars, self.nface
+        #*************************# 
+        # get required data here
+        #*************************# 
         def _compute_fpts(i_begin, i_end, upts, fpts):
-            # Copy upts to fpts
-            for idx in range(i_begin, i_end):
-                for j in range(nvars):
-                    tmp = upts[j, idx]
-                    for k in range(nface):
-                        fpts[k, j, idx] = tmp
+        #*************************# 
+        # Complete function
+        # upts: array holding cell center values
+        # fpts: array holding face values
+
+
+
+
+        #*************************# 
+            
         
         return self.be.make_loop(self.neles, _compute_fpts)
+
+#-------------------------------------------------------------------------------#
+    def _make_grad(self):
+        nface, ndims, nvars = self.nface, self.ndims, self.nvars
+        # Gradient operator 
+        op = self._prelsq
+        def _cal_grad(i_begin, i_end, fpts, grad):
+        #*************************# 
+        # Complete function
+        # grad: array holding cell center gradient values
+        # fpts: array holding face values
+
+        #*************************# 
+
+
+        # Compile the numba function
+        return self.be.make_loop(self.neles, _cal_grad)   
+
 
 #-------------------------------------------------------------------------------#
     def _make_div_upts(self):
@@ -182,24 +200,6 @@ class ParabolicElements(BaseElements, ParabolicFluidElements):
         # Compile the funtion
         return self.be.make_loop(self.neles, lvars["_div_upts"])
 
-#-------------------------------------------------------------------------------#
-    def _make_grad(self):
-        nface, ndims, nvars = self.nface, self.ndims, self.nvars
-        # Gradient operator 
-        op = self._prelsq
-        def _cal_grad(i_begin, i_end, fpts, grad):
-            # Elementwise dot product
-            # TODO: Reduce accesing global array
-            for i in range(i_begin, i_end):
-                for l in range(nvars):
-                    for k in range(ndims):
-                        tmp = 0
-                        for j in range(nface):
-                            tmp += op[k, j, i]*fpts[j, l, i]
-                        grad[k, l, i] = tmp
-
-        # Compile the function
-        return self.be.make_loop(self.neles, _cal_grad)   
 
 #-------------------------------------------------------------------------------#
     def _make_timestep(self):

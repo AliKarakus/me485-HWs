@@ -2,7 +2,6 @@
 from utils.nb import dot
 import numpy as np
 
-
 def get_bc(self, be, name, bcargs):
     bc = eval('make_bc_'+name)
     return be.compile(bc(bcargs))
@@ -21,5 +20,4 @@ def make_bc_neumann(bcargs):
     ub    = np.empty(nvars)
     def bc(ul, ur, *args):
         ur[0]  = ul[0]
-        # gur[0] = qn[0]
     return bc

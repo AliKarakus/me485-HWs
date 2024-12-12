@@ -4,13 +4,17 @@ import math
 
 # Before using any functions in the Python API, Gmsh must be initialized:
 gmsh.initialize(sys.argv)
+alpha = 0.40
+
+
 
 x0 = 0.0
 y0 = 0.0
 x1 = 1.0
 y1 = 1.0
 
-alpha = 0.5
+
+
 beta  = 0.25
 m0 = x0 + alpha*(x1-x0)
 m1 = x1 - alpha*(x1-x0)
