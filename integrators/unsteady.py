@@ -120,7 +120,7 @@ class EulerExplicit(BaseUnsteadyIntegrator):
         self._stages = stages = []
         stages.append(self._make_stages(0, 1, 0, 'dt', 1))
 
-    def step(self, dt):
+    def step(self, dt,t):
         sys = self.sys
         stages = self._stages
 

@@ -289,7 +289,7 @@ class LUSGS(BaseSteadyIntegrator):
     impl_op = 'spectral-radius'
 
     def construct_stages(self):
-        from pybaram.integrators.lusgs import make_lusgs_common, make_lusgs_update, make_serial_lusgs
+        from integrators.lusgs import make_lusgs_common, make_lusgs_update, make_serial_lusgs
 
         be = self.be
 
@@ -375,7 +375,7 @@ class ColoredLUSGS(BaseSteadyIntegrator):
     impl_op = 'spectral-radius'
 
     def construct_stages(self):
-        from pybaram.integrators.lusgs import  make_lusgs_common, make_lusgs_update, make_colored_lusgs
+        from integrators.lusgs import  make_lusgs_common, make_lusgs_update, make_colored_lusgs
 
         be = self.be
 
@@ -479,7 +479,7 @@ class BlockJacobi(BaseSteadyIntegrator):
     impl_op = 'approx-jacobian'
 
     def construct_stages(self):
-        from pybaram.integrators.jacobi import make_jacobi_update, make_jacobi_sweep, \
+        from integrators.jacobi import make_jacobi_update, make_jacobi_sweep, \
                                             make_pre_jacobi, make_tpre_jacobi
 
         # Constants for Jacobi method
@@ -577,7 +577,7 @@ class BlockLUSGS(BaseSteadyIntegrator):
     impl_op = 'approx-jacobian'
 
     def construct_stages(self):
-        from pybaram.integrators.blusgs import make_pre_blusgs, make_tpre_blusgs, \
+        from integrators.blusgs import make_pre_blusgs, make_tpre_blusgs, \
                                             make_serial_blusgs, make_blusgs_update
 
         # Constants for Block LU-SGS subiteration
@@ -687,7 +687,7 @@ class ColoredBlockLUSGS(BaseSteadyIntegrator):
     impl_op = 'approx-jacobian'
 
     def construct_stages(self):
-        from pybaram.integrators.blusgs import make_pre_blusgs, make_tpre_blusgs, \
+        from integrators.blusgs import make_pre_blusgs, make_tpre_blusgs, \
                                             make_colored_blusgs, make_blusgs_update
         
         # Constants for Block LU-SGS subiteration

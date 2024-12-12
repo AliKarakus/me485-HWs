@@ -12,6 +12,8 @@ class BaseIntegrator:
         # Get system of equations
         self.sys = get_system(be, cfg, msh, soln, comm, self.nreg, self.impl_op)
 
+        # print(self.sys)
+
         # Current index for pointing current array
         self._curr_idx = 0
 

@@ -29,8 +29,7 @@ class BaseElements:
 
         if order > 1:
             self.dxc = self.xc - self.xf
-        
-        # print(self.xc.shape, self.xf.shape, self.dxf.shape, self.dxv.shape)
+                    
         # Gradient method
         self._grad_method = cfg.get('solver', 'gradient', 'hybrid').lower()
 

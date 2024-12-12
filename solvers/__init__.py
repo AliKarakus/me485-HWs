@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from solvers.base.system import BaseSystem
 from solvers.grad.system import GradSystem
+from solvers.parabolic.system import ParabolicSystem
 from solvers.grad.elements import gradFluidElements
+from solvers.parabolic.elements import ParabolicFluidElements
+
 # from solvers.euler.system import EulerSystem
 # from solvers.navierstokes.system import NavierStokeSystem
 # from solvers.ranssa.system import RANSSASystem
@@ -19,6 +22,8 @@ def get_fluid(name):
         return FluidElements()
     elif name in ['grad']:
         return gradFluidElements()
+    elif name in ['parabolic']:
+        return ParabolicFluidElements()
     else:
         print(name)
         return subclass_by_name(FluidElements, name)()        

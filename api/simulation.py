@@ -12,11 +12,11 @@ def run(mesh, cfg, be='none', comm='none'):
 
     :param mesh: mefvm NativeReader object
     :type mesh: mefvm mesh
-    :param cfg: mefvm INIFile object
+    :cfg: mefvm INIFile object
     :type cfg: config
     :param be: mefvm backend object
     :type be: Backend
-    :param comm: mpi4py comm object
+    :comm: mpi4py comm object
     :type comm: MPI communicator
     """
     # Run common
@@ -28,15 +28,15 @@ def restart(mesh, soln, cfg, be='none', comm='none'):
     Restarted run from mesh and configuration files.
 
 
-    :param mesh: mefvm NativeReader object
+    :mesh: mefvm NativeReader object
     :type mesh: mefvm mesh
-    :param soln: mefvm NativeReader object
+    :soln: mefvm NativeReader object
     :type soln: mefvm solution
-    :param cfg: mefvm INIFile object
+    :cfg: mefvm INIFile object
     :type cfg: config
-    :param be: mefvm backend object
+    :be: mefvm backend object
     :type be: Backend
-    :param comm: mpi4py comm object
+    :comm: mpi4py comm object
     :type comm: MPI communicator
     """
     # Check mesh and solution file

@@ -6,7 +6,7 @@ from solvers.base import BaseVertex
 import numpy as np
 
 
-class GradVertex(BaseVertex):
+class ParabolicVertex(BaseVertex):
     _tag = 2314
 
     def make_array(self, limiter):
@@ -23,27 +23,25 @@ class GradVertex(BaseVertex):
         order = self.cfg.getint('solver', 'order', 1)
         limiter = self.cfg.get('solver', 'limiter', 'none')
 
-        # if order > 1 and limiter != 'none':
-        # Kernel to compute exterems at vertex
-        upts_in = [ele.upts_in for ele in elemap.values()]
-        self.compute_extv = Kernel(self._make_extv(), self.vpts, *upts_in)
-        if self._neivtx:
-            # Construct kernels for MPI communication at vertex
-            self.mpi = True
-            self._construct_neighbors(self._neivtx)
-        else:
-            self.mpi = False
-        # else:
-        #     self.compute_extv = NullKernel
-        #     self.mpi = False
+        if order > 1 and limiter != 'none':
+            # Kernel to compute exterems at vertex
+            upts_in = [ele.upts_in for ele in elemap.values()]
+            self.compute_extv = Kernel(self._make_extv(), self.vpts, *upts_in)
 
-#-------------------------------------------------------------------------------#
+            if self._neivtx:
+                # Construct kernels for MPI communication at vertex
+                self.mpi = True
+                self._construct_neighbors(self._neivtx)
+            else:
+                self.mpi = False
+        else:
+            self.compute_extv = NullKernel
+            self.mpi = False
+
     def _make_extv(self):
         ivtx = self._ivtx
         t, e, _ = self._idx
         nvars = self.nvars
-
-        # print(ivtx, self.nvtx)
 
         def cal_extv(i_begin, i_end, vext, *upts):
             for i in range(i_begin, i_end):
@@ -61,37 +59,6 @@ class GradVertex(BaseVertex):
                                 vext[1, jdx, i], upts[ti][jdx, ei])
 
         return self.be.make_loop(self.nvtx, cal_extv)
-# #-------------------------------------------------------------------------------#
-#     def _make_compute_avgv(self):
-#         # vtx  = self.vertex._vtx
-#         ivtx  = self._ivtx
-#         t, e, _ = self._idx
-#         nvars  = self.nvars
-#         neivtx = self._neivtx
-#         # dxv    = self.dxv
-
-#         # print(ivtx, self.nvtx)
-#         # print( self.vertex._idx)
-#         # print(dxv)
-
-#         def cal_avgv(i_begin, i_end, vavg, upts):
-#             for i in range(i_begin, i_end):
-#                 for idx in range(ivtx[i], ivtx[i+1]):
-#                     ei = e[idx]
-#                     print(i, idx, ei)
-#                     # print(i, idx )
-#                     for jdx in range(nvars):
-#                         if idx == ivtx[i]:
-#                             vavg[0, jdx, i] = upts[jdx, ei]
-#                         else:
-#                             # Compute sum of solution at vertex
-#                             vavg[0, jdx, i] +=  upts[jdx, ei]
-
-#                 # print(i, ivtx[i], ivtx[i+1], ivtx[i+1]-ivtx[i])
-#                 vavg[:,:,i] = - vavg[:,:,i]/( ivtx[i]-ivtx[i+1])
-                    
-#                 # print(i, sk, '\n')
-#         return self.be.make_loop(self.nvtx, cal_avgv)
 
     def _construct_neighbors(self, neivtx):
         from mpi4py import MPI

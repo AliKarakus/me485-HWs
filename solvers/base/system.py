@@ -116,7 +116,6 @@ class BaseSystem:
             if m:
                 lhs = msh[m.group(0)].astype('U4,i4,i1,i1').tolist()
                 name = m.group(1)
-                
 
                 if name.startswith('_virtual_'):
                     # Initiate virtual interfaces

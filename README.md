@@ -6,4 +6,5 @@ Changes:
 	- MPI support
 	- Implicit Time Integrators
 	- Explicit Time Integrators
-	-
+	- Adding Navier-Stokes with RANS
+	- Shock Capturing
