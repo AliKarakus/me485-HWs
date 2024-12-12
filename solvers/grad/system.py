@@ -20,42 +20,42 @@ class GradSystem(BaseSystem):
         # Queue for MPI
         q = self._queue
         
-        # Compute solution at flux point (face center)
-        self.eles.compute_fpts()
+        # # Compute solution at flux point (face center)
+        # self.eles.compute_fpts()
 
-        if self.mpiint:
-            # Start MPI communication for Inters
-            self.mpiint.pack()
-            self.mpiint.send(q)
-            self.mpiint.recv(q)
+        # if self.mpiint:
+        #     # Start MPI communication for Inters
+        #     self.mpiint.pack()
+        #     self.mpiint.send(q)
+        #     self.mpiint.recv(q)
 
-        # if least squares, compute jumps at faces
-        if( self._grad_method=='least-square'   or  self._grad_method=='weighted-least-square'):
-            # Compute Difference of solution at Inters
-            self.iint.compute_delu()
-            self.bint.compute_delu()
-            if self.mpiint:
-                # Finalize MPI communication
-                q.sync()
-                # Compute Difference of solution at MPI Inters
-                self.mpiint.compute_delu()
-        # if green-gauss, compute averages at faces
-        else:
-            # Compute Difference of solution at Inters
-            self.iint.compute_avgu()
-            self.bint.compute_avgu()
-            if self.mpiint:
-                # Finalize MPI communication
-                q.sync()
+        # # if least squares, compute jumps at faces
+        # if( self._grad_method=='least-square'   or  self._grad_method=='weighted-least-square'):
+        #     # Compute Difference of solution at Inters
+        #     self.iint.compute_delu()
+        #     self.bint.compute_delu()
+        #     if self.mpiint:
+        #         # Finalize MPI communication
+        #         q.sync()
+        #         # Compute Difference of solution at MPI Inters
+        #         self.mpiint.compute_delu()
+        # # if green-gauss, compute averages at faces
+        # else:
+        #     # Compute Difference of solution at Inters
+        #     self.iint.compute_avgu()
+        #     self.bint.compute_avgu()
+        #     if self.mpiint:
+        #         # Finalize MPI communication
+        #         q.sync()
 
-                # Compute Difference of solution at MPI Inters
-                self.mpiint.compute_avgu()
+        #         # Compute Difference of solution at MPI Inters
+        #         self.mpiint.compute_avgu()
 
-        # Compute gradient
-        self.eles.compute_grad()
+        # # Compute gradient
+        # self.eles.compute_grad()
 
-        res = self.L2Norm()
-        print('L2 norm of gradient:', res)
+        # res = self.L2Norm()
+        # print('L2 norm of gradient:', res)
 
         # self.post()
 
