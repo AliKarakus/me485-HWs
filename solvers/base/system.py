@@ -19,6 +19,7 @@ class BaseSystem:
 
     def __init__(self, be, cfg, msh, soln, comm, nreg, impl_op):
         self._grad_method = cfg.get('solver', 'gradient')
+        self._limiter = cfg.get('solver', 'limiter', 'none')
         # Save parallel infos
         self._comm = comm
         self.rank = rank = comm.rank

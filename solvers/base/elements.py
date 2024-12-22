@@ -132,6 +132,7 @@ class BaseElements:
                for v in self.primevars]
         ics = self.prim_to_conv(ics, self.cfg)
 
+
         # Allocate numpy array and copy parsed values
         self._ics = np.empty((self.nvars, self.neles))
         for i in range(self.nvars):

@@ -7,7 +7,7 @@ gmsh.initialize(sys.argv)
 
 # Next add a new model named "cavity" 
 gmsh.model.add("mixed")
-lc = 0.25
+lc = 0.025
 
 #Points
 p1  = gmsh.model.geo.addPoint(0.0, 0.0, 0.0, lc);
@@ -35,10 +35,10 @@ s2  = gmsh.model.geo.addPlaneSurface([cl2])
 # # # location of the nodes on the curve. For example, the following command forces
 # # # 10 uniformly placed nodes on curve 2 (including the nodes on the two end
 # # # points):
-gmsh.model.geo.mesh.setTransfiniteCurve(l1, 4)
-gmsh.model.geo.mesh.setTransfiniteCurve(l7, 4)
-gmsh.model.geo.mesh.setTransfiniteCurve(l5, 4)
-gmsh.model.geo.mesh.setTransfiniteCurve(l6, 4)
+gmsh.model.geo.mesh.setTransfiniteCurve(l1, 20)
+gmsh.model.geo.mesh.setTransfiniteCurve(l7, 40)
+gmsh.model.geo.mesh.setTransfiniteCurve(l5, 20)
+gmsh.model.geo.mesh.setTransfiniteCurve(l6, 40)
 
 gmsh.model.geo.mesh.setTransfiniteSurface(s1)
 gmsh.model.geo.mesh.setRecombine(2, s1)
@@ -50,7 +50,7 @@ gmsh.model.addPhysicalGroup(2, [s1, s2],13 , name="fluid")
 
 # # Save it to disk
 gmsh.model.mesh.generate(2)
-gmsh.write("parabolic.msh")
+gmsh.write("advection.msh")
 # Launch the GUI to see the results:
 if '-nopopup' not in sys.argv:
     gmsh.fltk.run()
