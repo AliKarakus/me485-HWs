@@ -14,7 +14,7 @@ def convertVTU():
 	      	export_soln(meshoutfile, name+'.pbrs', name+'.vtu')
 #----------------------------------------------------------------------------------#
 # Give the name of the INI file
-inifile = "advection.ini"
+inifile = "euler.ini"
 
 # Prepare configure object from input file
 cfg   = INIFile(inifile)

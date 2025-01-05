@@ -6,7 +6,7 @@ from solvers.base import BaseVertex
 import numpy as np
 
 
-class AdvectionVertex(BaseVertex):
+class BaseAdvecVertex(BaseVertex):
     _tag = 2314
 
     def make_array(self, limiter):
