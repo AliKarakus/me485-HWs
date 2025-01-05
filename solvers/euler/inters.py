@@ -433,7 +433,7 @@ class EulerSupInBCInters(EulerBCInters):
 
     def __init__(self, be, cfg, elemap, lhs, bctype):
         super().__init__(be, cfg, elemap, lhs, bctype)
-
+        # require all primitive variables at the boundary
         self._reqs = self.primevars
 
 
@@ -442,12 +442,13 @@ class EulerFarInBCInters(EulerBCInters):
 
     def __init__(self, be, cfg, elemap, lhs, bctype):
         super().__init__(be, cfg, elemap, lhs, bctype)
-
+        # require all primitive variables at the boundary
         self._reqs = self.primevars
 
 
 class EulerSubOutPBCInters(EulerBCInters):
     name = 'sub-outp'
+    # require only pressure
     _reqs = ['p']
 
 
